@@ -2,6 +2,7 @@
 import { clipboard } from "electron"
 import { React, getModule, constants } from "@vizality/webpack"
 import { Menu } from '@vizality/components';
+import * as http from "@vizality/http"
 import EmojiUtility from "../../modules/EmojiUtility"
 
 const { getFlattenedGuilds } = getModule("getFlattenedGuilds")
@@ -48,6 +49,15 @@ export default function (emojiUrl, emojiName, emojiID){
                 })
             }
         </Menu.MenuItem>
+
+        <Menu.MenuItem
+            id='eu-save'
+            label='Save Emoji'
+            action={async () => {
+                let fileContents = await http.get(emojiUrl)
+                DiscordNative.fileManager.saveWithDialog(fileContents.body, `${emojiName}.png`)
+            }}
+        />
 
         <Menu.MenuItem
             id='eu-copy'

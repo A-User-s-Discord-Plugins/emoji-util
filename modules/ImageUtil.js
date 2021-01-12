@@ -1,6 +1,5 @@
 import path from "path"
 import url from 'url'
-import * as http from "@vizality/http"
 
 export default {
     linkToBase64: async(link) => {

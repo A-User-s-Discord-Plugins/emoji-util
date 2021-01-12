@@ -6,7 +6,6 @@ const { open: openModal, close: closeModal } = require('@vizality/modal')
 
 import { Menu, Modal, Button } from '@vizality/components';
 import EmojiContextMenuRender from './components/context-menus/EmojiUtilContextMenu'
-import RenameModal from "./components/modals/Rename"
 const TextInput = getModuleByDisplayName("TextInput")
 const FormTitle = getModuleByDisplayName('FormTitle')
 const MessageContextMenu = getModule(m => m.default && m.default.displayName === 'MessageContextMenu')

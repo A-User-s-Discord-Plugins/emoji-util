@@ -1,18 +1,19 @@
 //sorry for doing this, Menu only accepts MenuItem or MenuGroup
 import { clipboard } from "electron"
-import { React, getModule } from "@vizality/webpack"
+import { React, getModule, constants } from "@vizality/webpack"
 import { Menu } from '@vizality/components';
+import EmojiUtility from "../modules/EmojiUtility"
 
 const { getFlattenedGuilds } = getModule("getFlattenedGuilds")
 const { getGuildPermissions } = getModule("getGuildPermissions")
 
 export default function (emojiUrl, emojiName, emojiID){
-    let guildsWithPerm = this.listServersWithManageEmojiPermission()
+    let guildsWithPerm = listGuildsWithManageEmojiPermission()
 
     return <>
         <Menu.MenuItem
             id='eu-clone'
-            label='Clone'
+            label='Clone emoji'
         >
             {
                 guildsWithPerm.map((guild) => {
@@ -34,9 +35,14 @@ export default function (emojiUrl, emojiName, emojiID){
                         ]}
                         action={() => {
                             EmojiUtility.createEmojiFromUrl(guild.id, emojiUrl, emojiName).then(() => {
-                                this.log("emoji uploaded hvae fun")
+                                vizality.api.notices.sendToast('eu-cloned-sucessfully-toast', {
+                                    header: "Cloned",
+                                    content: "The emoji was cloned sucessfully",
+                                    icon: 'FileUpload',
+                                    timeout: 5e3,
+                                });
                             }).catch(err => {
-                                this.error(err)
+                                console.error(err)
                             })
                         }}
                     />
@@ -46,7 +52,7 @@ export default function (emojiUrl, emojiName, emojiID){
 
         <Menu.MenuItem
             id='eu-copy'
-            label='Copy'
+            label='Copy emoji'
         >
             <Menu.MenuItem
                 id='eu-copy-url'

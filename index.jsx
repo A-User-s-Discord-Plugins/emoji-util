@@ -2,13 +2,11 @@ import { Plugin } from "@vizality/entities"
 import { React, getModule, constants, contextMenu } from '@vizality/webpack';
 import { patch, unpatch } from "@vizality/patcher"
 import EmojiUtility from "./modules/EmojiUtility"
-import ImageUtil from "./modules/ImageUtil"
 
 import { Menu } from '@vizality/components';
 import EmojiContextMenuRender from './components/EmojiUtilContextMenu'
-const emojiStore = getModule('getGuildEmoji')
 const MessageContextMenu = getModule(m => m.default && m.default.displayName === 'MessageContextMenu')
-const ExpressionPickerListItemImage = getModule(m => m.default && m.default.displayName === 'ExpressionPickerListItemImage')
+const EmojiPickerListRow = getModule(m => m.default && m.default.displayName == "EmojiPickerListRow")
 
 export default class EmojiUtil extends Plugin{
     async onStart(){
@@ -19,7 +17,7 @@ export default class EmojiUtil extends Plugin{
 
     onStop(){
         unpatch("eu-emoji-message-context-menu")
-        unpatch("eu-emoji-emoji-picker-context-menu")
+        unpatch("eu-emoji-picker-context-menu")
     }
 
     injectContextMenuInMessageContextMenu(){
@@ -27,7 +25,7 @@ export default class EmojiUtil extends Plugin{
             console.log(args, res)
             let itemDOM = args[0].target
 
-            if (args[0].target.classList.contains('emoji')){
+            if (itemDOM.classList.contains('emoji')){
                 let emojiName = itemDOM.attributes[0].value.replace(":", "")
                 let emojiID = itemDOM.src.split("/")[4].replace(".png?v=1", "")
 
@@ -45,29 +43,44 @@ export default class EmojiUtil extends Plugin{
                     </Menu.MenuItem>
                 )
             }
+
             return res;
         });
     }
 
     injectContextMenuInEmojiPicker() {
-        console.log(ExpressionPickerListItemImage)
-        patch('eu-emoji-emoji-picker-context-menu', ExpressionPickerListItemImage, 'default', (args) => {
-            console.log(args)
+        patch('eu-emoji-picker-context-menu', EmojiPickerListRow, 'default', (args, res) => {
 
-            args[0].onContextMenu = (e) => {
-                console.log(args, "heya im here")
-                let guildsWithPerm = this.listServersWithManageEmojiPermission()
-                contextMenu.openContextMenu(e, () => <Menu.Menu onClose={contextMenu.closeContextMenu}>
-                    {EmojiContextMenuRender(
-                        args[0].src, // Image
-                        args[0].alt.replace(":", ""), // Name
-                        Object.values(emojiStore.getGuilds()).flatMap(g => g.emojis).find(e => e.src === args[0].src) // ID. sorry for this
-                    )}
-                </Menu.Menu>)
+            //Thanks Strencher
+            if (!Array.isArray(res?.props?.children)) return res;
+
+            for (const emoji of res.props.children) {
+                if (!emoji || !emoji?.props?.children) continue;
+
+                let selectedEmoji = emoji.props.children.props.emoji
+                emoji.props.onContextMenu = e => {
+                    console.log(emoji, "heya im here")
+                    contextMenu.openContextMenu(e, () => <Menu.Menu onClose={contextMenu.closeContextMenu}>
+                        {EmojiContextMenuRender(
+                            selectedEmoji.url, // Image
+                            selectedEmoji.name, // Name
+                            selectedEmoji.id // ID
+                        )}
+                        <Menu.MenuItem 
+                            id="eu-delete-emoji"
+                            label="Delete emoji"
+                            color="colorDanger"
+                            action={() => {
+                                console.log(selectedEmoji)
+                                EmojiUtility.deleteEmoji(selectedEmoji.guildId, selectedEmoji.id)
+                            }}
+                        />
+                    </Menu.Menu>)
+                }
             }
 
-            return args;
-        }, true);
+            return res;
+        });
         // The true at the end of the function changes the patching to a pre-patching. To be honest idk what it means, but it works™
     }
 }

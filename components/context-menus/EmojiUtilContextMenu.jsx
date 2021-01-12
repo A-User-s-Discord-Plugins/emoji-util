@@ -2,10 +2,9 @@
 import { clipboard } from "electron"
 import { React, getModule, constants } from "@vizality/webpack"
 import { Menu } from '@vizality/components';
-import EmojiUtility from "../modules/EmojiUtility"
+import EmojiUtility from "../../modules/EmojiUtility"
 
 const { getFlattenedGuilds } = getModule("getFlattenedGuilds")
-const { getGuildPermissions } = getModule("getGuildPermissions")
 
 export default function (emojiUrl, emojiName, emojiID){
     let guildsWithPerm = listGuildsWithManageEmojiPermission()
@@ -13,7 +12,7 @@ export default function (emojiUrl, emojiName, emojiID){
     return <>
         <Menu.MenuItem
             id='eu-clone'
-            label='Clone emoji'
+            label='Clone Emoji'
         >
             {
                 guildsWithPerm.map((guild) => {
@@ -52,7 +51,7 @@ export default function (emojiUrl, emojiName, emojiID){
 
         <Menu.MenuItem
             id='eu-copy'
-            label='Copy emoji'
+            label='Copy Emoji'
         >
             <Menu.MenuItem
                 id='eu-copy-url'
@@ -83,8 +82,7 @@ const listGuildsWithManageEmojiPermission = function() {
     let guildList = getFlattenedGuilds();
     let guildsWithPerm = [];
     guildList.map((guild) => {
-        let guildperms = getGuildPermissions(guild.id)
-        if (guildperms && (guildperms & constants.Permissions.MANAGE_EMOJIS) !== 0) {
+        if (EmojiUtility.canManageEmojis(guild.id)) {
             guildsWithPerm.push(guild)
         }
     })

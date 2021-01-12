@@ -1,10 +1,14 @@
 import { Plugin } from "@vizality/entities"
-import { React, getModule, constants, contextMenu } from '@vizality/webpack';
+import { React, getModule, getModuleByDisplayName, contextMenu } from '@vizality/webpack';
 import { patch, unpatch } from "@vizality/patcher"
 import EmojiUtility from "./modules/EmojiUtility"
+const { open: openModal, close: closeModal } = require('@vizality/modal')
 
-import { Menu } from '@vizality/components';
-import EmojiContextMenuRender from './components/EmojiUtilContextMenu'
+import { Menu, Modal, Button } from '@vizality/components';
+import EmojiContextMenuRender from './components/context-menus/EmojiUtilContextMenu'
+import RenameModal from "./components/modals/Rename"
+const TextInput = getModuleByDisplayName("TextInput")
+const FormTitle = getModuleByDisplayName('FormTitle')
 const MessageContextMenu = getModule(m => m.default && m.default.displayName === 'MessageContextMenu')
 const EmojiPickerListRow = getModule(m => m.default && m.default.displayName == "EmojiPickerListRow")
 
@@ -59,22 +63,40 @@ export default class EmojiUtil extends Plugin{
 
                 let selectedEmoji = emoji.props.children.props.emoji
                 emoji.props.onContextMenu = e => {
-                    console.log(emoji, "heya im here")
                     contextMenu.openContextMenu(e, () => <Menu.Menu onClose={contextMenu.closeContextMenu}>
                         {EmojiContextMenuRender(
                             selectedEmoji.url, // Image
                             selectedEmoji.name, // Name
                             selectedEmoji.id // ID
                         )}
-                        <Menu.MenuItem 
-                            id="eu-delete-emoji"
-                            label="Delete emoji"
-                            color="colorDanger"
-                            action={() => {
-                                console.log(selectedEmoji)
-                                EmojiUtility.deleteEmoji(selectedEmoji.guildId, selectedEmoji.id)
-                            }}
-                        />
+                        {
+                            EmojiUtility.canManageEmojis(selectedEmoji.guildId) ?
+                            <>
+                                <Menu.MenuItem
+                                    id="eu-rename-emoji"
+                                    label="Rename Emoji"
+                                    action={() => {
+                                        openModal(() => {
+                                            return this.renderRenameModal("Rename emoji", (newval) => {
+                                                EmojiUtility.renameEmoji(selectedEmoji.guildId, selectedEmoji.id, newval)
+                                            }, selectedEmoji.name) 
+                                        })
+                                    }}
+                                />
+
+                                <Menu.MenuItem
+                                    id="eu-delete-emoji"
+                                    label="Delete Emoji"
+                                    color="colorDanger"
+                                    action={() => {
+                                        console.log(selectedEmoji)
+                                        EmojiUtility.deleteEmoji(selectedEmoji.guildId, selectedEmoji.id)
+                                    }}
+                                />
+                            </>
+                            :
+                            <></>
+                        }
                     </Menu.Menu>)
                 }
             }
@@ -82,5 +104,50 @@ export default class EmojiUtil extends Plugin{
             return res;
         });
         // The true at the end of the function changes the patching to a pre-patching. To be honest idk what it means, but it works™
+    }
+
+    renderRenameModal(title, onAcceptChanges, placeholder = "", original = ""){
+        let newVal = original
+        return <>
+            <Modal size={Modal.Sizes.SMALL}>
+                <Modal.Header>
+                    <FormTitle tag={FormTitle.Tags.H3}>{title}</FormTitle>
+                </Modal.Header>
+                <Modal.Content>
+                    <TextInput
+                        autoFocus
+                        defaultValue={original}
+                        className="qi-message-textbox"
+                        placeholder={placeholder}
+                        onChange={(value) => {
+                            newVal = value
+                        }}
+                    />
+                </Modal.Content>
+                <Modal.Footer>
+                    <Button
+                        look={Button.Looks.FILLED}
+                        size={Button.Sizes.MEDIUM}
+                        color={Button.Colors.BRAND}
+                        onClick={(e) => {
+                            onAcceptChanges(newVal)
+                            closeModal()
+                        }}
+                    >
+                        Rename
+                    </Button>
+                    <Button
+                        look={Button.Looks.LINK}
+                        size={Button.Sizes.MEDIUM}
+                        color={Button.Colors.WHITE}
+                        onClick={(e) => {
+                            closeModal()
+                        }}
+                    >
+                        Cancel
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+        </>
     }
 }

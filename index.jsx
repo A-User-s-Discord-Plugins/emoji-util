@@ -8,7 +8,6 @@ const { updateSetting, getSetting, toggleSetting } = vizality.api.settings._flux
 import { Menu, Modal, Button } from '@vizality/components';
 import Settings from "./components/settings"
 import EmojiContextMenuRender from './components/context-menus/EmojiUtilContextMenu'
-import { fi } from "@vizality/src/core/languages";
 const TextInput = getModuleByDisplayName("TextInput")
 const FormTitle = getModuleByDisplayName('FormTitle')
 const MessageContextMenu = getModule(m => m.default && m.default.displayName === 'MessageContextMenu')
@@ -16,21 +15,22 @@ const EmojiPickerListRow = getModule(m => m.default && m.default.displayName == 
 const NativeImageContextMenu = getModule(m => m.default?.displayName === 'NativeImageContextMenu');
 
 export default class EmojiUtil extends Plugin{
-    async onStart(){
+    async start(){
         this.injectStyles('./styles/index.scss')
+        this.injectStyles('./styles/utils.scss')
+
+        if (getSetting('colorDisabledEmojis', false)) {
+            document.documentElement.setAttribute('eu-colorDisabledEmojis', '')
+        }
 
         this.injectContextMenuInMessageContextMenu()
         this.injectContextMenuInEmojiPicker()
         this.injectContextMenuInEmojiElement()
         
-        vizality.api.settings.registerAddonSettings({
-            id: this.addonId,
-            heading: 'Emoji Util',
-            render: Settings
-        })
+        this.registerSettings(Settings)
     }
 
-    onStop(){
+    stop(){
         unpatch("eu-emoji-message-context-menu")
         unpatch("eu-emoji-picker-context-menu")
         unpatch("eu-emoji-element-context-menu")

@@ -14,6 +14,21 @@ module.exports = class Settings extends React.PureComponent {
                     toggleSetting('subMenu')
                 }}
             />
+
+            <SwitchItem
+                children="Colored disabled emojis"
+                note="Show colors when hovered a disabled emoji"
+                value={getSetting('colorDisabledEmojis', false)}
+                onChange={() => {
+                    toggleSetting('colorDisabledEmojis')
+
+                    if (getSetting('colorDisabledEmojis', false)) {
+                        document.documentElement.setAttribute('eu-colorDisabledEmojis', '')
+                    } else {
+                        document.documentElement.removeAttribute('eu-colorDisabledEmojis')
+                    }
+                }}
+            />
         </>
     }
 }

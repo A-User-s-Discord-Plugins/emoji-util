@@ -1,4 +1,4 @@
-import { React } from "@vizality/react"
+import { React } from "@vizality/webpack"
 import { SwitchItem } from '@vizality/components/settings'
 
 const { updateSetting, getSetting, toggleSetting } = vizality.api.settings._fluxProps(this.addonId)

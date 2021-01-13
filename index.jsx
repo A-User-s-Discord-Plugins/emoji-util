@@ -8,6 +8,7 @@ const { updateSetting, getSetting, toggleSetting } = vizality.api.settings._flux
 import { Menu, Modal, Button } from '@vizality/components';
 import Settings from "./components/settings"
 import EmojiContextMenuRender from './components/context-menus/EmojiUtilContextMenu'
+import { fi } from "@vizality/src/core/languages";
 const TextInput = getModuleByDisplayName("TextInput")
 const FormTitle = getModuleByDisplayName('FormTitle')
 const MessageContextMenu = getModule(m => m.default && m.default.displayName === 'MessageContextMenu')
@@ -41,6 +42,7 @@ export default class EmojiUtil extends Plugin{
             let itemDOM = args[0].target
 
             if (itemDOM.classList.contains('emoji')){
+                console.log(itemDOM)
                 let emojiName = itemDOM.attributes[0].value.replace(":", "")
                 let emojiID = itemDOM.src.split("/")[4].replace(".png?v=1", "")
 
@@ -53,16 +55,18 @@ export default class EmojiUtil extends Plugin{
                             label='Emoji Util'
                         >
                             {EmojiContextMenuRender(
-                                itemDOM.src, // URL
-                                emojiName, // Name
-                                emojiID // ID
+                                itemDOM.src, // Image: URL
+                                emojiName, // Name: String
+                                emojiID, // ID: String
+                                itemDOM.src.includes(`/assets/`) // Internal emoji: Boolean (optional)
                             )}
                         </Menu.MenuItem>
                         :
                         EmojiContextMenuRender(
-                            itemDOM.src, // URL
-                            emojiName, // Name
-                            emojiID // ID
+                            itemDOM.src, // Image: URL
+                            emojiName, // Name: String
+                            emojiID, // ID: String
+                            itemDOM.src.includes(`/assets/`) // Internal emoji: Boolean (optional)
                         )}
                     </>
                 )
@@ -74,7 +78,6 @@ export default class EmojiUtil extends Plugin{
 
     injectContextMenuInEmojiPicker() {
         patch('eu-emoji-picker-context-menu', EmojiPickerListRow, 'default', (args, res) => {
-
             //Thanks Strencher
             if (!Array.isArray(res?.props?.children)) return res;
 
@@ -83,11 +86,16 @@ export default class EmojiUtil extends Plugin{
 
                 let selectedEmoji = emoji.props.children.props.emoji
                 emoji.props.onContextMenu = e => {
+                    console.log(selectedEmoji)
+                    let selectedEmojiUrl;
+                    if (!selectedEmoji.managed) { selectedEmojiUrl = selectedEmoji.url }
+                    else { selectedEmojiUrl = `https://discord.com${selectedEmoji.url}` }
                     contextMenu.openContextMenu(e, () => <Menu.Menu onClose={contextMenu.closeContextMenu}>
                         {EmojiContextMenuRender(
-                            selectedEmoji.url, // Image
-                            selectedEmoji.name, // Name
-                            selectedEmoji.id // ID
+                            selectedEmojiUrl, // Image: URL
+                            selectedEmoji.name, // Name: String
+                            selectedEmoji.id, // ID: String
+                            selectedEmoji.managed // Internal emoji: Boolean (optional)
                         )}
                         {
                             EmojiUtility.canManageEmojis(selectedEmoji.guildId) ?

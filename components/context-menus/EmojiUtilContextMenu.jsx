@@ -9,12 +9,13 @@ import ImageUtil from "../../modules/ImageUtil";
 
 const { getFlattenedGuilds } = getModule("getFlattenedGuilds")
 
-export default function (emojiUrl, emojiName, emojiID){
+export default function (emojiUrl, emojiName, emojiID, internalEmoji = false){
     let guildsWithPerm = listGuildsWithManageEmojiPermission()
 
     return <>
         <Menu.MenuItem
             id='eu-clone'
+            disabled={internalEmoji}
             label='Clone Emoji'
         >
             {
@@ -75,6 +76,7 @@ export default function (emojiUrl, emojiName, emojiID){
             <Menu.MenuItem
                 id='eu-copy-image'
                 label='Image'
+                disabled={internalEmoji}
                 action={async () => {
                     let buffer = await ImageUtil.linkToBuffer(emojiUrl)
                     let image = nativeImage.createFromBuffer(buffer)
@@ -91,6 +93,7 @@ export default function (emojiUrl, emojiName, emojiID){
             <Menu.MenuItem
                 id='eu-copy-id'
                 label='ID'
+                disabled={internalEmoji}
                 action={() => {
                     clipboard.writeText(emojiID)
                 }}

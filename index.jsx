@@ -86,10 +86,10 @@ export default class EmojiUtil extends Plugin{
 
                 let selectedEmoji = emoji.props.children.props.emoji
                 emoji.props.onContextMenu = e => {
-                    console.log(selectedEmoji)
                     let selectedEmojiUrl;
                     if (!selectedEmoji.managed) { selectedEmojiUrl = selectedEmoji.url }
                     else { selectedEmojiUrl = `https://discord.com${selectedEmoji.url}` }
+
                     contextMenu.openContextMenu(e, () => <Menu.Menu onClose={contextMenu.closeContextMenu}>
                         {EmojiContextMenuRender(
                             selectedEmojiUrl, // Image: URL
@@ -153,16 +153,18 @@ export default class EmojiUtil extends Plugin{
                                 label='Emoji Util'
                             >
                                 {EmojiContextMenuRender(
-                                    emojiUrl, // URL
-                                    emojiName, // Name
-                                    emojiID // ID
+                                    emojiUrl, // Image: URL
+                                    emojiName, // Name: String
+                                    emojiID, // ID: String
+                                    itemDOM.src.includes(`/assets/`) // Internal emoji: Boolean (optional)
                                 )}
                             </Menu.MenuItem>
                             :
                             EmojiContextMenuRender(
-                                emojiUrl, // URL
-                                emojiName, // Name
-                                emojiID // ID
+                                emojiUrl, // Image: URL
+                                emojiName, // Name: String
+                                emojiID, // ID: String
+                                itemDOM.src.includes(`/assets/`) // Internal emoji: Boolean (optional)
                             )}
                     </>
                 )

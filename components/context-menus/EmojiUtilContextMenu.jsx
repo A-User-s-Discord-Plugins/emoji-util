@@ -2,8 +2,10 @@
 import { clipboard } from "electron"
 import { React, getModule, constants } from "@vizality/webpack"
 import { Menu } from '@vizality/components';
+import { nativeImage } from 'electron'
 import * as http from "@vizality/http"
 import EmojiUtility from "../../modules/EmojiUtility"
+import ImageUtil from "../../modules/ImageUtil";
 
 const { getFlattenedGuilds } = getModule("getFlattenedGuilds")
 
@@ -68,6 +70,15 @@ export default function (emojiUrl, emojiName, emojiID){
                 label='URL'
                 action={() => {
                     clipboard.writeText(emojiUrl)
+                }}
+            />
+            <Menu.MenuItem
+                id='eu-copy-image'
+                label='Image'
+                action={async () => {
+                    let buffer = await ImageUtil.linkToBuffer(emojiUrl)
+                    let image = nativeImage.createFromBuffer(buffer)
+                    clipboard.writeImage(image)
                 }}
             />
             <Menu.MenuItem

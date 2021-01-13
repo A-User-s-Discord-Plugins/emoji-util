@@ -3,24 +3,36 @@ import { React, getModule, getModuleByDisplayName, contextMenu } from '@vizality
 import { patch, unpatch } from "@vizality/patcher"
 import EmojiUtility from "./modules/EmojiUtility"
 const { open: openModal, close: closeModal } = require('@vizality/modal')
+const { updateSetting, getSetting, toggleSetting } = vizality.api.settings._fluxProps(this.addonId)
 
 import { Menu, Modal, Button } from '@vizality/components';
+import Settings from "./components/settings"
 import EmojiContextMenuRender from './components/context-menus/EmojiUtilContextMenu'
 const TextInput = getModuleByDisplayName("TextInput")
 const FormTitle = getModuleByDisplayName('FormTitle')
 const MessageContextMenu = getModule(m => m.default && m.default.displayName === 'MessageContextMenu')
 const EmojiPickerListRow = getModule(m => m.default && m.default.displayName == "EmojiPickerListRow")
+const NativeImageContextMenu = getModule(m => m.default?.displayName === 'NativeImageContextMenu');
 
 export default class EmojiUtil extends Plugin{
     async onStart(){
         this.injectStyles('./styles/index.scss')
+
         this.injectContextMenuInMessageContextMenu()
         this.injectContextMenuInEmojiPicker()
+        this.injectContextMenuInEmojiElement()
+        
+        vizality.api.settings.registerAddonSettings({
+            id: this.addonId,
+            heading: 'Emoji Util',
+            render: Settings
+        })
     }
 
     onStop(){
         unpatch("eu-emoji-message-context-menu")
         unpatch("eu-emoji-picker-context-menu")
+        unpatch("eu-emoji-element-context-menu")
     }
 
     injectContextMenuInMessageContextMenu(){
@@ -34,16 +46,25 @@ export default class EmojiUtil extends Plugin{
 
                 res.props.children.push(
                     <Menu.MenuSeparator />,
-                    <Menu.MenuItem
-                        id='eu-emoji-submenu'
-                        label='Emoji'
-                    >
-                        {EmojiContextMenuRender(
+                    <>
+                        {getSetting('subMenu', true) ?
+                        <Menu.MenuItem
+                            id='eu-emoji-submenu'
+                            label='Emoji Util'
+                        >
+                            {EmojiContextMenuRender(
+                                itemDOM.src, // URL
+                                emojiName, // Name
+                                emojiID // ID
+                            )}
+                        </Menu.MenuItem>
+                        :
+                        EmojiContextMenuRender(
                             itemDOM.src, // URL
                             emojiName, // Name
                             emojiID // ID
                         )}
-                    </Menu.MenuItem>
+                    </>
                 )
             }
 
@@ -71,6 +92,7 @@ export default class EmojiUtil extends Plugin{
                         {
                             EmojiUtility.canManageEmojis(selectedEmoji.guildId) ?
                             <>
+                                <Menu.MenuSeparator />
                                 <Menu.MenuItem
                                     id="eu-rename-emoji"
                                     label="Rename Emoji"
@@ -102,9 +124,45 @@ export default class EmojiUtil extends Plugin{
 
             return res;
         });
-        // The true at the end of the function changes the patching to a pre-patching. To be honest idk what it means, but it works™
     }
 
+    injectContextMenuInEmojiElement() {
+        patch('eu-emoji-element-context-menu', NativeImageContextMenu, 'default', (args, res) => {
+            console.log(args, res)
+            let itemDOM = args[0].target
+
+            if (itemDOM.classList.contains('emoji')){
+                let emojiName = itemDOM.attributes[0].value.replace(":", "")
+                let emojiUrl = args[0].src
+                let emojiID = emojiUrl.split("/")[4].replace(".png?v=1", "")
+
+                res.props.children.push(
+                    <Menu.MenuSeparator />,
+                    <>
+                        {getSetting('subMenu', true) ?
+                            <Menu.MenuItem
+                                id='eu-emoji-submenu'
+                                label='Emoji Util'
+                            >
+                                {EmojiContextMenuRender(
+                                    emojiUrl, // URL
+                                    emojiName, // Name
+                                    emojiID // ID
+                                )}
+                            </Menu.MenuItem>
+                            :
+                            EmojiContextMenuRender(
+                                emojiUrl, // URL
+                                emojiName, // Name
+                                emojiID // ID
+                            )}
+                    </>
+                )
+            }
+
+            return res;
+        });
+    }
     renderRenameModal(title, onAcceptChanges, placeholder = "", original = ""){
         let newVal = original
         return <>
@@ -150,3 +208,14 @@ export default class EmojiUtil extends Plugin{
         </>
     }
 }
+
+Array.prototype.remove = function () { //why not?
+    var what, a = arguments, L = a.length, ax;
+    while (L && this.length) {
+        what = a[--L];
+        while ((ax = this.indexOf(what)) !== -1) {
+            this.splice(ax, 1);
+        }
+    }
+    return this;
+};

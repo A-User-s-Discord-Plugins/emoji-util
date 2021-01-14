@@ -48,7 +48,6 @@ export default class EmojiUtil extends Plugin{
 
             if (itemDOM.classList.contains('emoji')){
                 //itemDOM.classList.add("eu-blurEmoji")
-                console.log(itemDOM)
                 let emojiName = itemDOM.attributes[0].value.replace(":", "")
                 let emojiID = itemDOM.src.split("/")[4].replace(".png?v=1", "")
 
@@ -124,7 +123,6 @@ export default class EmojiUtil extends Plugin{
                                     label="Delete Emoji"
                                     color="colorDanger"
                                     action={() => {
-                                        console.log(selectedEmoji)
                                         EmojiUtility.deleteEmoji(selectedEmoji.guildId, selectedEmoji.id)
                                     }}
                                 />
@@ -151,7 +149,6 @@ export default class EmojiUtil extends Plugin{
 
     injectContextMenuInEmojiElement() {
         patch('eu-emoji-element-context-menu', NativeImageContextMenu, 'default', (args, res) => {
-            console.log(args, res)
             let itemDOM = args[0].target
 
             if (itemDOM.classList.contains('emoji')){

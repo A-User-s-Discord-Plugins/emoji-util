@@ -3,6 +3,7 @@ import { React, getModule, getModuleByDisplayName, contextMenu } from '@vizality
 import { patch, unpatch } from "@vizality/patcher"
 import EmojiUtility from "./modules/EmojiUtility"
 const { open: openModal, close: closeModal } = require('@vizality/modal')
+
 const { updateSetting, getSetting, toggleSetting } = vizality.api.settings._fluxProps(this.addonId)
 
 import { Menu, Modal, Button } from '@vizality/components';
@@ -13,6 +14,8 @@ const FormTitle = getModuleByDisplayName('FormTitle')
 const MessageContextMenu = getModule(m => m.default && m.default.displayName === 'MessageContextMenu')
 const EmojiPickerListRow = getModule(m => m.default && m.default.displayName == "EmojiPickerListRow")
 const NativeImageContextMenu = getModule(m => m.default?.displayName === 'NativeImageContextMenu');
+const Emoji = getModule('Emoji')
+const UploadModal = getModuleByDisplayName('Upload')
 
 export default class EmojiUtil extends Plugin{
     async start(){
@@ -26,6 +29,7 @@ export default class EmojiUtil extends Plugin{
         this.injectContextMenuInMessageContextMenu()
         this.injectContextMenuInEmojiPicker()
         this.injectContextMenuInEmojiElement()
+        // this.injectEmoji()
         
         this.registerSettings(Settings)
     }
@@ -34,6 +38,7 @@ export default class EmojiUtil extends Plugin{
         unpatch("eu-emoji-message-context-menu")
         unpatch("eu-emoji-picker-context-menu")
         unpatch("eu-emoji-element-context-menu")
+        // unpatch("eu-emoji-element")
     }
 
     injectContextMenuInMessageContextMenu(){
@@ -42,6 +47,7 @@ export default class EmojiUtil extends Plugin{
             let itemDOM = args[0].target
 
             if (itemDOM.classList.contains('emoji')){
+                //itemDOM.classList.add("eu-blurEmoji")
                 console.log(itemDOM)
                 let emojiName = itemDOM.attributes[0].value.replace(":", "")
                 let emojiID = itemDOM.src.split("/")[4].replace(".png?v=1", "")
@@ -128,6 +134,15 @@ export default class EmojiUtil extends Plugin{
                         }
                     </Menu.Menu>)
                 }
+
+
+                if (getSetting('fileEmojis', false)) { // Upcoming feature
+                    res.props.onClick = () => {
+                        openModal(() => {
+                            return <UploadModal />
+                        })
+                    }
+                }
             }
 
             return res;
@@ -173,6 +188,15 @@ export default class EmojiUtil extends Plugin{
             return res;
         });
     }
+
+    injectEmoji(){ // Upcoming feature
+        patch('eu-emoji-element', Emoji.prototype, 'render', (args, res) => {
+            console.log("ok i'm here")
+            console.log(args, res)
+        })
+    }
+
+
     renderRenameModal(title, onAcceptChanges, placeholder = "", original = ""){
         let newVal = original
         return <>

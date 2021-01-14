@@ -29,6 +29,16 @@ module.exports = class Settings extends React.PureComponent {
                     }
                 }}
             />
+
+            <SwitchItem
+                disabled={true}
+                children={["Send emojis as file ", <sup className='h5-18_1nd'>(Upcoming)</sup>]}
+                note="When clicked, emojis are sent like a file"
+                value={getSetting('fileEmojis', false)}
+                onChange={() => {
+                    toggleSetting('fileEmojis')
+                }}
+            />
         </>
     }
 }

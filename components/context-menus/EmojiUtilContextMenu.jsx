@@ -1,7 +1,7 @@
 //sorry for doing this, Menu only accepts MenuItem or MenuGroup
 import { clipboard } from "electron"
 import { React, getModule, constants } from "@vizality/webpack"
-import { Menu } from '@vizality/components';
+import { ContextMenu } from '@vizality/components';
 import { nativeImage } from 'electron'
 import * as http from "@vizality/http"
 import EmojiUtility from "../../modules/EmojiUtility"
@@ -13,14 +13,14 @@ export default function (emojiUrl, emojiName, emojiID, internalEmoji = false){
     let guildsWithPerm = listGuildsWithManageEmojiPermission()
 
     return <>
-        <Menu.MenuItem
+        <ContextMenu.Item
             id='eu-clone'
             disabled={internalEmoji}
             label='Clone Emoji'
         >
             {
                 guildsWithPerm.map((guild) => {
-                    return <Menu.MenuItem
+                    return <ContextMenu.Item
                         id={`eu-clone-guild-${guild.id}`}
                         label={[
                             <>
@@ -51,9 +51,9 @@ export default function (emojiUrl, emojiName, emojiID, internalEmoji = false){
                     />
                 })
             }
-        </Menu.MenuItem>
+        </ContextMenu.Item>
 
-        <Menu.MenuItem
+        <ContextMenu.Item
             id='eu-save'
             label='Save Emoji'
             action={async () => {
@@ -62,18 +62,18 @@ export default function (emojiUrl, emojiName, emojiID, internalEmoji = false){
             }}
         />
 
-        <Menu.MenuItem
+        <ContextMenu.Item
             id='eu-copy'
             label='Copy Emoji'
         >
-            <Menu.MenuItem
+            <ContextMenu.Item
                 id='eu-copy-url'
                 label='URL'
                 action={() => {
                     clipboard.writeText(emojiUrl)
                 }}
             />
-            <Menu.MenuItem
+            <ContextMenu.Item
                 id='eu-copy-image'
                 label='Image'
                 disabled={internalEmoji}
@@ -83,14 +83,14 @@ export default function (emojiUrl, emojiName, emojiID, internalEmoji = false){
                     clipboard.writeImage(image)
                 }}
             />
-            <Menu.MenuItem
+            <ContextMenu.Item
                 id='eu-copy-name'
                 label='Name'
                 action={() => {
                     clipboard.writeText(emojiName)
                 }}
             />
-            <Menu.MenuItem
+            <ContextMenu.Item
                 id='eu-copy-id'
                 label='ID'
                 disabled={internalEmoji}
@@ -98,7 +98,7 @@ export default function (emojiUrl, emojiName, emojiID, internalEmoji = false){
                     clipboard.writeText(emojiID)
                 }}
             />
-        </Menu.MenuItem>
+        </ContextMenu.Item>
     </>
 }
 

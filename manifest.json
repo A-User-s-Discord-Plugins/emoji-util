@@ -2,6 +2,9 @@
   "name": "Emoji Util",
   "version": "0.0.A",
   "description": "Utilities to emojis",
-  "author": "A user",
+  "author": {
+    "name": "A user",
+    "id": "264062457448759296"
+  },
   "license": "MIT"
 }

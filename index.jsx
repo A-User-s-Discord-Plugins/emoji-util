@@ -6,7 +6,7 @@ const { open: openModal, close: closeModal } = require('@vizality/modal')
 
 const { updateSetting, getSetting, toggleSetting } = vizality.api.settings._fluxProps(this.addonId)
 
-import { Menu, Modal, Button } from '@vizality/components';
+import { ContextMenu, Modal, Button } from '@vizality/components';
 import Settings from "./components/settings"
 import EmojiContextMenuRender from './components/context-menus/EmojiUtilContextMenu'
 const TextInput = getModuleByDisplayName("TextInput")
@@ -52,10 +52,10 @@ export default class EmojiUtil extends Plugin{
                 let emojiID = itemDOM.src.split("/")[4].replace(".png?v=1", "")
 
                 res.props.children.push(
-                    <Menu.MenuSeparator />,
+                    <ContextMenu.Separator />,
                     <>
                         {getSetting('subMenu', true) ?
-                        <Menu.MenuItem
+                        <ContextMenu.Item
                             id='eu-emoji-submenu'
                             label='Emoji Util'
                         >
@@ -65,7 +65,7 @@ export default class EmojiUtil extends Plugin{
                                 emojiID, // ID: String
                                 itemDOM.src.includes(`/assets/`) // Internal emoji: Boolean (optional)
                             )}
-                        </Menu.MenuItem>
+                        </ContextMenu.Item>
                         :
                         EmojiContextMenuRender(
                             itemDOM.src, // Image: URL
@@ -95,7 +95,7 @@ export default class EmojiUtil extends Plugin{
                     if (!selectedEmoji.managed) { selectedEmojiUrl = selectedEmoji.url }
                     else { selectedEmojiUrl = `https://discord.com${selectedEmoji.url}` }
 
-                    contextMenu.openContextMenu(e, () => <Menu.Menu onClose={contextMenu.closeContextMenu}>
+                    contextMenu.openContextMenu(e, () => <ContextMenu onClose={contextMenu.closeContextMenu}>
                         {EmojiContextMenuRender(
                             selectedEmojiUrl, // Image: URL
                             selectedEmoji.name, // Name: String
@@ -105,8 +105,8 @@ export default class EmojiUtil extends Plugin{
                         {
                             EmojiUtility.canManageEmojis(selectedEmoji.guildId) ?
                             <>
-                                <Menu.MenuSeparator />
-                                <Menu.MenuItem
+                                <ContextMenu.Separator />
+                                <ContextMenu.Item
                                     id="eu-rename-emoji"
                                     label="Rename Emoji"
                                     action={() => {
@@ -118,7 +118,7 @@ export default class EmojiUtil extends Plugin{
                                     }}
                                 />
 
-                                <Menu.MenuItem
+                                <ContextMenu.Item
                                     id="eu-delete-emoji"
                                     label="Delete Emoji"
                                     color="colorDanger"
@@ -130,7 +130,7 @@ export default class EmojiUtil extends Plugin{
                             :
                             <></>
                         }
-                    </Menu.Menu>)
+                    </ContextMenu>)
                 }
 
 
@@ -157,10 +157,10 @@ export default class EmojiUtil extends Plugin{
                 let emojiID = emojiUrl.split("/")[4].replace(".png?v=1", "")
 
                 res.props.children.push(
-                    <Menu.MenuSeparator />,
+                    <ContextMenu.Separator />,
                     <>
                         {getSetting('subMenu', true) ?
-                            <Menu.MenuItem
+                            <ContextMenu.Item
                                 id='eu-emoji-submenu'
                                 label='Emoji Util'
                             >
@@ -170,7 +170,7 @@ export default class EmojiUtil extends Plugin{
                                     emojiID, // ID: String
                                     itemDOM.src.includes(`/assets/`) // Internal emoji: Boolean (optional)
                                 )}
-                            </Menu.MenuItem>
+                            </ContextMenu.Item>
                             :
                             EmojiContextMenuRender(
                                 emojiUrl, // Image: URL

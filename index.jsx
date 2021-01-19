@@ -43,7 +43,6 @@ export default class EmojiUtil extends Plugin{
 
     injectContextMenuInMessageContextMenu(){
         patch('eu-emoji-message-context-menu', MessageContextMenu, 'default', (args, res) => {
-            console.log(args, res)
             let itemDOM = args[0].target
 
             if (itemDOM.classList.contains('emoji')){
@@ -95,7 +94,7 @@ export default class EmojiUtil extends Plugin{
                     if (!selectedEmoji.managed) { selectedEmojiUrl = selectedEmoji.url }
                     else { selectedEmojiUrl = `https://discord.com${selectedEmoji.url}` }
 
-                    contextMenu.openContextMenu(e, () => <ContextMenu onClose={contextMenu.closeContextMenu}>
+                    contextMenu.openContextMenu(e, () => <ContextMenu.Menu onClose={contextMenu.closeContextMenu}>
                         {EmojiContextMenuRender(
                             selectedEmojiUrl, // Image: URL
                             selectedEmoji.name, // Name: String
@@ -130,7 +129,7 @@ export default class EmojiUtil extends Plugin{
                             :
                             <></>
                         }
-                    </ContextMenu>)
+                    </ContextMenu.Menu>)
                 }
 
 

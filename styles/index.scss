@@ -9,3 +9,25 @@
     display: flex;
     align-items: center;
 }
+
+.eu-preview-slider{
+    position: fixed;
+    left:50%;
+    transform: translateX(-50%);
+    bottom:15%;
+    width: 40%;
+}
+
+.eu-form-title{
+    color: var(--header-secondary);
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 400;
+}
+
+.eu-inline-keyboardshortcut{
+    display: inline-flex;
+    margin-left: 4px;
+    margin-bottom: 0;
+    margin-right: 1px;
+}

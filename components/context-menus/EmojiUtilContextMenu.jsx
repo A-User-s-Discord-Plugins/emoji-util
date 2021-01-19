@@ -1,12 +1,18 @@
 //sorry for doing this, Menu only accepts MenuItem or MenuGroup
-import { clipboard } from "electron"
-import { React, getModule, constants } from "@vizality/webpack"
-import { ContextMenu } from '@vizality/components';
-import { nativeImage } from 'electron'
+import fs from "fs"
+import path from "path"
+import { shell } from 'electron'
+
+import { clipboard, nativeImage } from "electron"
+import { React, getModule } from "@vizality/webpack"
 import * as http from "@vizality/http"
 import EmojiUtility from "../../modules/EmojiUtility"
 import ImageUtil from "../../modules/ImageUtil";
+const { open: openModal } = require('@vizality/modal')
+const settings = vizality.api.settings._fluxProps(this.addonId)
 
+import { ContextMenu } from '@vizality/components';
+import PreviewEmoji from "../modals/preview"
 const { getFlattenedGuilds } = getModule("getFlattenedGuilds")
 
 export default function (emojiUrl, emojiName, emojiID, internalEmoji = false){
@@ -56,9 +62,57 @@ export default function (emojiUrl, emojiName, emojiID, internalEmoji = false){
         <ContextMenu.Item
             id='eu-save'
             label='Save Emoji'
-            action={async () => {
+            action={async (e) => {
                 let fileContents = await http.get(emojiUrl)
-                DiscordNative.fileManager.saveWithDialog(fileContents.body, `${emojiName}.png`)
+
+                if (settings.getSetting("saveFolderPath") === "" || settings.getSetting("saveFolderPath") === null || e.shiftKey){
+                    DiscordNative.fileManager.saveWithDialog(fileContents.body, `${emojiName}.png`)
+
+                } else if (fs.existsSync(settings.getSetting("saveFolderPath"))) {
+                    let filePath = `${PathManager.getEmojiFolderPath()}/${emojiName}.png`
+                    fs.promises.writeFile(filePath, fileContents.body).then(() => {
+                        vizality.api.notices.sendToast('eu-download-sucessfully-toast', {
+                            header: "Emoji downloaded",
+                            content: "The emoji was downloaded sucessfully",
+                            icon: 'EmojiPeopleCategory',
+                            timeout: 8e3,
+                            buttons: [{
+                                text: 'Open',
+                                color: 'brand',
+                                size: 'medium',
+                                look: 'outlined',
+                                onClick: () => {
+                                    vizality.api.notices.closeToast('eu-download-sucessfully-toast');
+                                    shell.showItemInFolder(filePath)
+                                }
+                            }]
+                        });
+                    })
+
+                } else {
+                    vizality.api.notices.sendToast('eu-download-error-toast', {
+                        header: "Error",
+                        content: "The emoji folder doesn't exist. Maybe you deleted or renamed it? Anyway, you can check your settings",
+                        icon: 'CloseCircle',
+                        buttons: [{
+                            text: 'Open Settings',
+                            color: 'yellow',
+                            size: 'medium',
+                            look: 'outlined',
+                            onClick: () => {
+                                vizality.api.notices.closeToast('eu-download-error-toast');
+                                vizality.api.router.navigate("/vizality/dashboard/plugins/emoji-util") }
+                        }]
+                    });
+                }
+            }}
+        />
+
+        <ContextMenu.Item
+            id='eu-preview'
+            label='Preview Emoji'
+            action={async () => {
+                openModal(() => <PreviewEmoji emojiUrl={emojiUrl}/>)
             }}
         />
 

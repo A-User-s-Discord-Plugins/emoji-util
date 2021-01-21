@@ -1,4 +1,5 @@
 import { Plugin } from "@vizality/entities"
+import { findInReactTree } from '@vizality/util/react'
 import { React, getModule, getModuleByDisplayName, contextMenu } from '@vizality/webpack';
 import { patch, unpatch } from "@vizality/patcher"
 import EmojiUtility from "./modules/EmojiUtility"
@@ -8,14 +9,16 @@ const { updateSetting, getSetting, toggleSetting } = vizality.api.settings._flux
 
 import { ContextMenu, Modal, Button } from '@vizality/components';
 import Settings from "./components/settings"
-import EmojiContextMenuRender from './components/context-menus/EmojiUtilContextMenu'
+import EmojiContextMenuRender from './components/context-menus/Main'
+import EmojiButtonContextMenu from './components/context-menus/EmojiButton'
 const TextInput = getModuleByDisplayName("TextInput")
 const FormTitle = getModuleByDisplayName('FormTitle')
-const MessageContextMenu = getModule(m => m.default && m.default.displayName === 'MessageContextMenu')
-const EmojiPickerListRow = getModule(m => m.default && m.default.displayName == "EmojiPickerListRow")
+const MessageContextMenu = getModule(m => m.default?.displayName === 'MessageContextMenu')
+const EmojiPickerListRow = getModule(m => m.default?.displayName === "EmojiPickerListRow")
 const NativeImageContextMenu = getModule(m => m.default?.displayName === 'NativeImageContextMenu');
 const Emoji = getModule('Emoji')
 const UploadModal = getModuleByDisplayName('Upload')
+const ChannelTextAreaContainer = getModule(m => m.type?.render?.displayName === "ChannelTextAreaContainer");
 
 export default class EmojiUtil extends Plugin{
     async start(){
@@ -30,6 +33,7 @@ export default class EmojiUtil extends Plugin{
         this.injectContextMenuInEmojiPicker()
         this.injectContextMenuInEmojiElement()
         // this.injectEmoji()
+        this.injectEmojiButton()
         
         this.registerSettings(Settings)
     }
@@ -38,6 +42,7 @@ export default class EmojiUtil extends Plugin{
         unpatch("eu-emoji-message-context-menu")
         unpatch("eu-emoji-picker-context-menu")
         unpatch("eu-emoji-element-context-menu")
+        unpatch("eu-emoji-button-context-menu")
         // unpatch("eu-emoji-element")
     }
 
@@ -129,7 +134,8 @@ export default class EmojiUtil extends Plugin{
                             :
                             <></>
                         }
-                    </ContextMenu.Menu>)
+                    </ContextMenu.Menu>
+                    )
                 }
 
 
@@ -190,6 +196,46 @@ export default class EmojiUtil extends Plugin{
             console.log("ok i'm here")
             console.log(args, res)
         })
+    }
+
+    injectEmojiButton() {
+        patch("eu-emoji-button-context-menu", ChannelTextAreaContainer.type, "render", (args, res) => {
+            let buttons = findInReactTree( //Find the button list
+                res,
+                (r) =>
+                    r && r.className && r.className.indexOf("buttons-") == 0
+            );
+
+            let emojiButtomDOM;
+
+            buttons.children.map((currentItem) => { // Finds the emoji button container
+                if (currentItem.ref !== null && currentItem.ref.current.children[0].className.includes("emojiButton-")) {
+                    emojiButtomDOM = currentItem.ref.current.children[0]
+                }
+            })
+
+            emojiButtomDOM.oncontextmenu = e => {
+                let contextMenuSettings = { // Simulate a React SyntheticEvent since openContextMenu doesn't support DOM's PointEvent
+                    pageX: e.x,
+                    pageY: e.y,
+                    className: "context-menu",
+                    config: {
+                        context: "APP"
+                    },
+                    nativeEvent: e,
+                    stopPropagation: function () { return true },
+                    target: e.target,
+                    currentTarget: e.target,
+                    timeStamp: e.timeStamp
+                }
+
+                contextMenu.openContextMenu(contextMenuSettings, () => {
+                    return <EmojiButtonContextMenu />
+                })
+            }
+
+            return res;
+        });
     }
 
 

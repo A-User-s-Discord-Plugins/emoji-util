@@ -10,7 +10,6 @@ const { updateSetting, getSetting, toggleSetting } = vizality.api.settings._flux
 import { ContextMenu, Modal, Button } from '@vizality/components';
 import Settings from "./components/settings"
 import EmojiContextMenuRender from './components/context-menus/Main'
-import EmojiButtonContextMenu from './components/context-menus/EmojiButton'
 const TextInput = getModuleByDisplayName("TextInput")
 const FormTitle = getModuleByDisplayName('FormTitle')
 const MessageContextMenu = getModule(m => m.default?.displayName === 'MessageContextMenu')
@@ -33,7 +32,7 @@ export default class EmojiUtil extends Plugin{
         this.injectContextMenuInEmojiPicker()
         this.injectContextMenuInEmojiElement()
         // this.injectEmoji()
-        this.injectEmojiButton()
+        // this.injectEmojiButton()
         
         this.registerSettings(Settings)
     }
@@ -198,45 +197,56 @@ export default class EmojiUtil extends Plugin{
         })
     }
 
-    injectEmojiButton() {
-        patch("eu-emoji-button-context-menu", ChannelTextAreaContainer.type, "render", (args, res) => {
-            let buttons = findInReactTree( //Find the button list
-                res,
-                (r) =>
-                    r && r.className && r.className.indexOf("buttons-") == 0
-            );
+    // ok i have to admit this is bloat at this point
+    
+    // injectEmojiButton() {
+    //     patch("eu-emoji-button-context-menu", ChannelTextAreaContainer.type, "render", (args, res) => {
+    //         let buttons = findInReactTree( //Find the button list
+    //             res,
+    //             (r) =>
+    //                 r && r.className && r.className.indexOf("buttons-") == 0
+    //         );
 
-            let emojiButtomDOM;
+    //         let emojiButtomDOM;
 
-            buttons.children.map((currentItem) => { // Finds the emoji button container
-                if (currentItem.ref !== null && currentItem.ref.current.children[0].className.includes("emojiButton-")) {
-                    emojiButtomDOM = currentItem.ref.current.children[0]
-                }
-            })
+    //         buttons.children.map((currentItem) => { // Finds the emoji button container
+    //             if (currentItem.ref !== null && currentItem.ref.current.children[0].className.includes("emojiButton-")) {
+    //                 emojiButtomDOM = currentItem.ref.current.children[0]
+    //             }
+    //         })
 
-            emojiButtomDOM.oncontextmenu = e => {
-                let contextMenuSettings = { // Simulate a React SyntheticEvent since openContextMenu doesn't support DOM's PointEvent
-                    pageX: e.x,
-                    pageY: e.y,
-                    className: "context-menu",
-                    config: {
-                        context: "APP"
-                    },
-                    nativeEvent: e,
-                    stopPropagation: function () { return true },
-                    target: e.target,
-                    currentTarget: e.target,
-                    timeStamp: e.timeStamp
-                }
+    //         emojiButtomDOM.oncontextmenu = e => {
+    //             let contextMenuSettings = { // Simulate a React SyntheticEvent since openContextMenu doesn't support DOM's PointEvent
+    //                 pageX: e.x,
+    //                 pageY: e.y,
+    //                 className: "context-menu",
+    //                 config: {
+    //                     context: "APP"
+    //                 },
+    //                 nativeEvent: e,
+    //                 stopPropagation: function () { return true },
+    //                 target: e.target,
+    //                 currentTarget: e.target,
+    //                 timeStamp: e.timeStamp
+    //             }
 
-                contextMenu.openContextMenu(contextMenuSettings, () => {
-                    return <EmojiButtonContextMenu />
-                })
-            }
+    //             contextMenu.openContextMenu(contextMenuSettings, () => {
+    //                 return <ContextMenu.Menu onClose={contextMenu.closeContextMenu}>
+    //                     <ContextMenu.Item
+    //                         id="eu-open-emoji-folder"
+    //                         label="Open emoji folder"
+    //                     />
+    //                     <ContextMenu.Item
+    //                         id="eu-open-emoji-util-settings"
+    //                         label="Go to Emoji Util settings"
+    //                     />
+    //                 </ContextMenu.Menu>
+    //             })
+    //         }
 
-            return res;
-        });
-    }
+    //         return res;
+    //     });
+    // }
 
 
     renderRenameModal(title, onAcceptChanges, placeholder = "", original = ""){

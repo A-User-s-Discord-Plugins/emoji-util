@@ -2,8 +2,8 @@
 import fs from "fs"
 import path from "path"
 import { shell } from 'electron'
-
 import { clipboard, nativeImage } from "electron"
+
 import { React, getModule } from "@vizality/webpack"
 import * as http from "@vizality/http"
 import EmojiUtility from "../../modules/EmojiUtility"
@@ -13,11 +13,16 @@ const settings = vizality.api.settings._fluxProps(this.addonId)
 
 import { ContextMenu } from '@vizality/components';
 import PreviewEmoji from "../modals/preview"
+import ServerList from "./serverList"
 const { getFlattenedGuilds } = getModule("getFlattenedGuilds")
 
+
+
 export default function (emojiUrl, emojiID, internalEmoji = false){
-    let guildsWithPerm = listGuildsWithManageEmojiPermission()
-    let emojiName = EmojiUtility.getEmojiByID(emojiID).name
+    let emojiName;
+    try {
+        emojiName = EmojiUtility.getEmojiByID(emojiID).name
+    } catch (e) {}
 
     return <>
         <ContextMenu.Item
@@ -26,37 +31,20 @@ export default function (emojiUrl, emojiID, internalEmoji = false){
             label='Clone Emoji'
         >
             {
-                guildsWithPerm.map((guild) => {
-                    return <ContextMenu.Item
-                        id={`eu-clone-guild-${guild.id}`}
-                        label={[
-                            <>
-                                {
-                                    typeof guild.icon === "string" ? 
-                                    <img src={`https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.webp`}
-                                        className="eu-rounded-guild-image"
-                                    />
-                                    :
-                                    <></>
-                                }
-                            </>
-                            ,
-                            guild.name
-                        ]}
-                        action={() => {
-                            EmojiUtility.createEmojiFromUrl(guild.id, emojiUrl, emojiName).then(() => {
-                                vizality.api.notices.sendToast('eu-cloned-sucessfully-toast', {
-                                    header: "Cloned",
-                                    content: "The emoji was cloned sucessfully",
-                                    icon: 'FileUpload',
-                                    timeout: 5e3,
-                                });
-                            }).catch(err => {
-                                console.error(err)
-                            })
-                        }}
-                    />
-                })
+                ServerList(
+                    (guild) => {
+                        EmojiUtility.createEmojiFromUrl(guild.id, emojiUrl, emojiName).then(() => {
+                            vizality.api.notices.sendToast('eu-cloned-sucessfully-toast', {
+                                header: "Cloned",
+                                content: "The emoji was cloned sucessfully",
+                                icon: 'FileUpload',
+                                timeout: 5e3,
+                            });
+                        }).catch(err => {
+                            console.error(err)
+                        })
+                    }
+                )
             }
         </ContextMenu.Item>
 
@@ -171,15 +159,4 @@ export default function (emojiUrl, emojiID, internalEmoji = false){
             />
         </ContextMenu.Item>
     </>
-}
-
-const listGuildsWithManageEmojiPermission = function() {
-    let guildList = getFlattenedGuilds();
-    let guildsWithPerm = [];
-    guildList.map((guild) => {
-        if (EmojiUtility.canManageEmojis(guild.id)) {
-            guildsWithPerm.push(guild)
-        }
-    })
-    return guildsWithPerm
 }

@@ -10,6 +10,7 @@ const { updateSetting, getSetting, toggleSetting } = vizality.api.settings._flux
 import { ContextMenu, Modal, Button } from '@vizality/components';
 import Settings from "./components/settings"
 import EmojiContextMenuRender from './components/context-menus/Main'
+import EmojiContextServerList from './components/context-menus/serverList'
 const TextInput = getModuleByDisplayName("TextInput")
 const FormTitle = getModuleByDisplayName('FormTitle')
 const MessageContextMenu = getModule(m => m.default?.displayName === 'MessageContextMenu')
@@ -49,30 +50,61 @@ export default class EmojiUtil extends Plugin{
         patch('eu-emoji-message-context-menu', MessageContextMenu, 'default', (args, res) => {
             let itemDOM = args[0].target
 
-            if (itemDOM.classList.contains('emoji')){
-                let emojiID = itemDOM.src.split("/")[4].replace(".png?v=1", "")
-                res.props.children.push(
-                    <ContextMenu.Separator />,
-                    <>
-                        {getSetting('subMenu', true) ?
+            console.log(itemDOM.nodeName)
+
+            if (itemDOM.nodeName === "IMG"){
+                if (itemDOM.classList.contains('emoji')) {
+                    let emojiID = itemDOM.src.split("/")[4].replace(".png?v=1", "")
+                    res.props.children.push(
+                        <ContextMenu.Separator />,
+                        <>
+                            {getSetting('subMenu', true) ?
+                                <ContextMenu.Item
+                                    id='eu-emoji-submenu'
+                                    label='Emoji Util'
+                                >
+                                    {EmojiContextMenuRender(
+                                        itemDOM.src, // Image: URL
+                                        emojiID, // ID: String
+                                        itemDOM.src.includes(`/assets/`) // Internal emoji: Boolean (optional)
+                                    )}
+                                </ContextMenu.Item>
+                                :
+                                EmojiContextMenuRender(
+                                    itemDOM.src, // Image: URL
+                                    emojiID, // ID: String
+                                    itemDOM.src.includes(`/assets/`) // Internal emoji: Boolean (optional)
+                                )}
+                        </>
+                    )
+                } else {
+                    res.props.children.push(
+                        <ContextMenu.Separator />,
                         <ContextMenu.Item
-                            id='eu-emoji-submenu'
-                            label='Emoji Util'
+                            id='eu-create-emoji-submenu'
+                            label='Create emoji'
                         >
-                            {EmojiContextMenuRender(
-                                itemDOM.src, // Image: URL
-                                emojiID, // ID: String
-                                itemDOM.src.includes(`/assets/`) // Internal emoji: Boolean (optional)
-                            )}
+                            {
+                                EmojiContextServerList(
+                                    (guild) => openModal(() => {
+                                        return this.renderRenameModal("Create emoji", "Create", (name) => {
+                                            EmojiUtility.createEmojiFromUrl(guild.id, itemDOM.src, name).then(() => {
+                                                vizality.api.notices.sendToast('eu-created-sucessfully-toast', {
+                                                    header: "Emoji Created",
+                                                    content: "The emoji was created sucessfully",
+                                                    icon: 'FileUpload',
+                                                    timeout: 5e3,
+                                                });
+                                            }).catch(err => {
+                                                console.error(err)
+                                            })
+                                        }, "my-awesome-emoji")
+                                    })
+                                )
+                            }
                         </ContextMenu.Item>
-                        :
-                        EmojiContextMenuRender(
-                            itemDOM.src, // Image: URL
-                            emojiID, // ID: String
-                            itemDOM.src.includes(`/assets/`) // Internal emoji: Boolean (optional)
-                        )}
-                    </>
-                )
+                    )
+                }
             }
 
             return res;
@@ -108,7 +140,7 @@ export default class EmojiUtil extends Plugin{
                                     label="Rename Emoji"
                                     action={() => {
                                         openModal(() => {
-                                            return this.renderRenameModal("Rename emoji", (newval) => {
+                                            return this.renderRenameModal("Rename emoji", "Rename", (newval) => {
                                                 EmojiUtility.renameEmoji(selectedEmoji.guildId, selectedEmoji.id, newval)
                                             }, selectedEmoji.name) 
                                         })
@@ -241,7 +273,7 @@ export default class EmojiUtil extends Plugin{
     // }
 
 
-    renderRenameModal(title, onAcceptChanges, placeholder = "", original = ""){
+    renderRenameModal(title, buttonName, onAcceptChanges, placeholder = "", original = ""){
         let newVal = original
         return <>
             <Modal size={Modal.Sizes.SMALL}>
@@ -269,7 +301,7 @@ export default class EmojiUtil extends Plugin{
                             closeModal()
                         }}
                     >
-                        Rename
+                        {buttonName}
                     </Button>
                     <Button
                         look={Button.Looks.LINK}

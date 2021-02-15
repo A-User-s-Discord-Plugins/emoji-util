@@ -9,7 +9,7 @@ export default {
     createEmojiFromUrl: async (guildId, emojiUrl, name) => {
         try {
             let emojiBase64 = await ImageUtil.linkToBase64(emojiUrl)
-            await discordEmojiUtil.uploadEmoji(guildId, emojiBase64, name.replace(constants.EMOJI_RE, '').substr(0, constants.EMOJI_MAX_LENGTH))
+            await discordEmojiUtil.uploadEmoji(guildId, emojiBase64, name)
         } catch (err) {
             throw err
         }

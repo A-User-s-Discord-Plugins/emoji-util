@@ -110,14 +110,6 @@ export default function (emojiUrl, emojiID, internalEmoji = false){
         />
 
         <ContextMenu.Item
-            id='eu-preview'
-            label='Preview Emoji'
-            action={async () => {
-                openModal(() => <PreviewEmoji emojiUrl={emojiUrl}/>)
-            }}
-        />
-
-        <ContextMenu.Item
             id='eu-copy'
             label='Copy Emoji'
         >
@@ -153,6 +145,29 @@ export default function (emojiUrl, emojiID, internalEmoji = false){
                 action={() => {
                     clipboard.writeText(emojiID)
                 }}
+            />
+        </ContextMenu.Item>
+
+        <ContextMenu.Item
+            id='eu-extras'
+            label='Extras'
+        >
+            <ContextMenu.Item
+                id='eu-preview'
+                label='Preview Emoji'
+                action={async () => {
+                    openModal(() => <PreviewEmoji emojiUrl={emojiUrl} />)
+                }}
+            />
+            <ContextMenu.Item
+                id='eu-search-image'
+                label='Reverse Image Search Emoji'
+                action={() => shell.openExternal(`https://www.google.com/searchbyimage?image_url=${emojiUrl}`)}
+            />
+            <ContextMenu.Item
+                id='eu-open-external-browser'
+                label='Open in external browser'
+                action={() => shell.openExternal(emojiUrl)}
             />
         </ContextMenu.Item>
     </>

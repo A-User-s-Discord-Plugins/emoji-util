@@ -50,10 +50,7 @@ export default class EmojiUtil extends Plugin{
             let itemDOM = args[0].target
 
             if (itemDOM.classList.contains('emoji')){
-                //itemDOM.classList.add("eu-blurEmoji")
-                let emojiName = itemDOM.attributes[0].value.replace(":", "")
                 let emojiID = itemDOM.src.split("/")[4].replace(".png?v=1", "")
-
                 res.props.children.push(
                     <ContextMenu.Separator />,
                     <>
@@ -64,7 +61,6 @@ export default class EmojiUtil extends Plugin{
                         >
                             {EmojiContextMenuRender(
                                 itemDOM.src, // Image: URL
-                                emojiName, // Name: String
                                 emojiID, // ID: String
                                 itemDOM.src.includes(`/assets/`) // Internal emoji: Boolean (optional)
                             )}
@@ -72,7 +68,6 @@ export default class EmojiUtil extends Plugin{
                         :
                         EmojiContextMenuRender(
                             itemDOM.src, // Image: URL
-                            emojiName, // Name: String
                             emojiID, // ID: String
                             itemDOM.src.includes(`/assets/`) // Internal emoji: Boolean (optional)
                         )}
@@ -101,7 +96,6 @@ export default class EmojiUtil extends Plugin{
                     contextMenu.openContextMenu(e, () => <ContextMenu.Menu onClose={contextMenu.closeContextMenu}>
                         {EmojiContextMenuRender(
                             selectedEmojiUrl, // Image: URL
-                            selectedEmoji.name, // Name: String
                             selectedEmoji.id, // ID: String
                             selectedEmoji.managed // Internal emoji: Boolean (optional)
                         )}
@@ -156,7 +150,6 @@ export default class EmojiUtil extends Plugin{
             let itemDOM = args[0].target
 
             if (itemDOM.classList.contains('emoji')){
-                let emojiName = itemDOM.attributes[0].value.replace(":", "")
                 let emojiUrl = args[0].src
                 let emojiID = emojiUrl.split("/")[4].replace(".png?v=1", "")
 
@@ -170,7 +163,6 @@ export default class EmojiUtil extends Plugin{
                             >
                                 {EmojiContextMenuRender(
                                     emojiUrl, // Image: URL
-                                    emojiName, // Name: String
                                     emojiID, // ID: String
                                     itemDOM.src.includes(`/assets/`) // Internal emoji: Boolean (optional)
                                 )}

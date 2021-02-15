@@ -2,6 +2,7 @@ import { getModule, constants } from '@vizality/webpack';
 import ImageUtil from "./ImageUtil"
 
 const discordEmojiUtil = getModule('uploadEmoji')
+const { getGuilds } = getModule("getGuildEmoji")
 const { getGuildPermissions } = getModule("getGuildPermissions")
 
 export default {
@@ -38,5 +39,8 @@ export default {
         } catch (err) {
             throw err
         }
+    },
+    getEmojiByID: (id) => {
+        return Object.values(getGuilds()).flatMap(g => g.emojis).find(emoji => emoji.id === id)
     }
 }

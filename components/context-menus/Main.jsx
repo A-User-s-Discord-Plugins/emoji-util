@@ -15,8 +15,9 @@ import { ContextMenu } from '@vizality/components';
 import PreviewEmoji from "../modals/preview"
 const { getFlattenedGuilds } = getModule("getFlattenedGuilds")
 
-export default function (emojiUrl, emojiName, emojiID, internalEmoji = false){
+export default function (emojiUrl, emojiID, internalEmoji = false){
     let guildsWithPerm = listGuildsWithManageEmojiPermission()
+    let emojiName = EmojiUtility.getEmojiByID(emojiID).name
 
     return <>
         <ContextMenu.Item
@@ -141,6 +142,7 @@ export default function (emojiUrl, emojiName, emojiID, internalEmoji = false){
                 id='eu-copy-name'
                 label='Name'
                 action={() => {
+                    console.log
                     clipboard.writeText(emojiName)
                 }}
             />

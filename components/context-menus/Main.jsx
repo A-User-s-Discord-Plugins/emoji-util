@@ -20,9 +20,9 @@ const { getFlattenedGuilds } = getModule("getFlattenedGuilds")
 
 export default function (emojiUrl, emojiID, internalEmoji = false){
     let emojiName;
-    try {
+    if (!internalEmoji) try {
         emojiName = EmojiUtility.getEmojiByID(emojiID).name
-    } catch (e) {}
+    } catch (e) { console.error(e) }
 
     return <>
         <ContextMenu.Item

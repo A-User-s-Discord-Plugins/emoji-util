@@ -54,7 +54,7 @@ export default class EmojiUtil extends Plugin{
 
             if (itemDOM.nodeName === "IMG"){
                 if (itemDOM.classList.contains('emoji')) {
-                    let emojiID = itemDOM.src.split("/")[4].replace(".png?v=1", "")
+                    let emojiID = itemDOM.src.split("/")[4].replace(".png?v=1", "").replace(".gif?v=1", "")
                     res.props.children.push(
                         <ContextMenu.Separator />,
                         <>

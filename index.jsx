@@ -50,8 +50,6 @@ export default class EmojiUtil extends Plugin{
         patch('eu-emoji-message-context-menu', MessageContextMenu, 'default', (args, res) => {
             let itemDOM = args[0].target
 
-            console.log(itemDOM.nodeName)
-
             if (itemDOM.nodeName === "IMG"){
                 if (itemDOM.classList.contains('emoji')) {
                     let emojiID = itemDOM.src.split("/")[4].replace(".png?v=1", "").replace(".gif?v=1", "")

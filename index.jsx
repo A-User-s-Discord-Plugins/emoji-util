@@ -52,7 +52,8 @@ export default class EmojiUtil extends Plugin{
 
             if (itemDOM.nodeName === "IMG"){
                 if (itemDOM.classList.contains('emoji')) {
-                    let emojiID = itemDOM.src.split("/")[4].replace(".png?v=1", "").replace(".gif?v=1", "")
+                    let emojiID = itemDOM.src.match(/https:\/\/cdn.discordapp.com\/emojis\/(\d+)/)[1]
+                    let emojiName = itemDOM.alt.substring(1, itemDOM.alt.length - 1)
                     res.props.children.push(
                         <ContextMenu.Separator />,
                         <>
@@ -64,14 +65,16 @@ export default class EmojiUtil extends Plugin{
                                     {EmojiContextMenuRender(
                                         itemDOM.src, // Image: URL
                                         emojiID, // ID: String
-                                        itemDOM.src.includes(`/assets/`) // Internal emoji: Boolean (optional)
+                                        itemDOM.src.includes(`/assets/`), // Internal emoji: Boolean (optional)
+                                        emojiName
                                     )}
                                 </ContextMenu.Item>
                                 :
                                 EmojiContextMenuRender(
                                     itemDOM.src, // Image: URL
                                     emojiID, // ID: String
-                                    itemDOM.src.includes(`/assets/`) // Internal emoji: Boolean (optional)
+                                    itemDOM.src.includes(`/assets/`), // Internal emoji: Boolean (optional)
+                                    emojiName
                                 )}
                         </>
                     )
